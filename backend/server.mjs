@@ -6,8 +6,8 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 app.use(express.json());
 
-// GET Routes
-app.get('/', (req, res) => {
+// Test Route
+app.get('/test', (req, res) => {
     res.send('Hello, World!');
 });
 
