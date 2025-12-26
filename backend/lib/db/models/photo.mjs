@@ -1,11 +1,10 @@
 // Import statements
 import mongoose from "mongoose";
 
-// Pin Schema definition
-const pinSchema = new mongoose.Schema({
+// Photo-schema definition
+const photoSchema = new mongoose.Schema({
   title: {
     type: String,
-    required: true,
     trim: true,
     maxlength: 100,
   },
@@ -28,37 +27,38 @@ const pinSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
-  board: {
+  album: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Board",
-  },
-  sourceURL: {
-    type: String,
-    default: "",
+    ref: "Album",
   },
   tags: [{
     type: String,
     trim: true,
     lowercase: true,
   }],
-  likes: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-  }],
-  comments: [{
-    user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-    text: { type: String, required: true, maxlength: 500 },
-    createdAt: { type: Date, default: Date.now },
-  }],
-  repinCount: {
+  camera: {
+    type: String,
+    trim: true,
+  },
+  location: {
+    type: String,
+    trim: true,
+  },
+  dateTaken: {
+    type: Date,
+  },
+  isFeatured: {
+    type: Boolean,
+    default: false,
+  },
+  isPublished: {
+    type: Boolean,
+    default: true,
+  },
+  order: {
     type: Number,
     default: 0,
   },
-  originalPin: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Pin",
-    default: null,
-  },
 }, { timestamps: true });
 
-export default mongoose.model("Pin", pinSchema);
+export default mongoose.model("Photo", photoSchema);
