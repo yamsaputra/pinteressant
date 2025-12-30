@@ -1,0 +1,23 @@
+{
+  "name": "auth",
+  "version": "1.0.0",
+  "description": "Authorization server for Pinteressant.",
+  "license": "ISC",
+  "author": "Yama Saputra",
+  "type": "module",
+  "main": "auth_main.mjs",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "node auth_main.mjs"
+  },
+  "dependencies": {
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.0.2"
+  }
+}
