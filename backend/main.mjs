@@ -6,9 +6,10 @@ import cookieParser from "cookie-parser";
 // Load environment variables from .env file
 dotenv.config();
 
-// Import local modules
+// Import local modules, routes and database connection
 import { connectMongoDB } from "./lib/db/mongoDB.mjs";
-import { backendRoutes } from "./index.mjs";
+import auth_routes from "./lib/routes/auth_routes.mjs";
+import portfolio_routes from "./lib/routes/portfolio_routes.mjs";
 
 /**
  * Backend server class
@@ -17,7 +18,6 @@ class backendServer {
   constructor(port) {
     this.app = express();
     this.port = port;
-    this.backendRoutes = new backendRoutes(this.app);
   }
 
   loadMiddlewares() {
@@ -34,11 +34,16 @@ class backendServer {
     });
   }
 
+  setupRoutes() {
+   this.app.use("/api", auth_routes);
+    this.app.use("/api", portfolio_routes);
+  }
+  
   // Starts the backend server
   async start() {
     this.loadMiddlewares();
     this.testRoute();
-    this.backendRoutes.setupRoutes();
+    this.setupRoutes();
 
     this.app.listen(this.port, async () => {
       console.log(`Backend server is running on port ${this.port}`);
@@ -46,8 +51,8 @@ class backendServer {
       try {
         await connectMongoDB();
         console.log("Connected to MongoDB successfully.");
-      } catch (error) {
-        console.error("Failed to connect to MongoDB:", error);
+      } catch (err) {
+        console.error("Failed to connect to MongoDB:", err);
       }
     });
   }
