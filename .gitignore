@@ -1,4 +1,5 @@
 .env
+keygen.mjs
 /backend/node_modules
 /auth/node_modules
 /.vscode

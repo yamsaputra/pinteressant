@@ -1,3 +1,7 @@
+// Import external modules
+import jwt from "jsonwebtoken";
+
+// TODO: remove URL hardcoding once deployed
 const AUTH_SERVER_URL =
   process.env.AUTH_SERVER_URL || "http://localhost:4000/auth";
 
@@ -116,9 +120,38 @@ export const refreshAccessToken = async (refreshToken, username, email) => {
  * @param {String} next
  * @returns
  */
+export const verifyToken = (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      console.error("fetch_auth: 401 No token provided");
+      return res.status(401).json({ error: "No token provided" });
+    }
+
+    const token = authHeader.split(" ")[1];  // Extract token after "Bearer "
+    
+    // Verify and decode the token
+    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    
+    // Attach user data to request
+    req.userId = decoded.userID;  // ✓ This is what getMe expects
+    req.username = decoded.username;
+    req.email = decoded.email;
+    
+    next();
+  } catch (err) {
+    console.error("fetch_auth: 401 Token verification failed:", err);
+    res.status(401).json({ error: "Invalid or expired token" });
+  }
+};
+/* 
 export const verifyToken = async (req, res, next) => {
   const authHeader = req.headers.authorization;
   const token = authHeader && authHeader.split(" ")[1]; // Bearer TOKEN
+
+  console.log("DEV: verifyToken called with header:", authHeader);
+  console.log("DEV: verifyToken called with token:", token);
 
   if (!token) {
     console.error(
@@ -144,4 +177,4 @@ export const verifyToken = async (req, res, next) => {
     console.error("Error verifying token:", err.message);
     res.status(500).json({ error: "500 Internal server error." });
   }
-};
+}; */

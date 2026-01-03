@@ -3,25 +3,32 @@ import jwt from "jsonwebtoken";
 
 /**
  * @description Generate an access token for the user.
- * @param {Headers} req 
- * @param {Response} res 
- * @returns 
+ * @param {Headers} req
+ * @param {Response} res
+ * @returns
  */
 export const generateAccessToken = (req, res) => {
   try {
-    const { userId, username, email } = req.body;
+    const { userID, username, email } = req.body;
 
-    if (!userId) {
+    console.log("controllers: generateAccessToken called with:", {
+      userID,
+      username,
+      email,
+    });
+
+    if (!userID) {
       console.error();
-      return res.status(404).json({ error: "userId is required" });
+      return res.status(404).json({ error: "userID is required" });
     }
 
     const accessToken = jwt.sign(
-      { userId, username, email },
+      { userID, username, email },
       process.env.ACCESS_TOKEN_SECRET,
       { expiresIn: "15m" }
     );
 
+    console.log("controllers: Generated access token for Username:", username);
     res.json({ accessToken, expiresIn: 900 }); // 900 seconds = 15 minutes
   } catch (err) {
     console.error("controllers: 500 Error generating access token:", err);
@@ -31,25 +38,30 @@ export const generateAccessToken = (req, res) => {
 
 /**
  * @description Generate a refresh token for the user.
- * @param {Headers} req 
- * @param {Response} res 
- * @returns 
+ * @param {Headers} req
+ * @param {Response} res
+ * @returns
  */
 export const generateRefreshToken = (req, res) => {
   try {
-    const { userId } = req.body;
+    const { userID } = req.body;
 
-    if (!userId) {
-      console.error(`controllers: 404 userId is required for token refresh`);
-      return res.status(404).json({ error: "userId is required" });
+    console.log("controllers: Generated refresh token called with:", {
+      userID,
+    });
+
+    if (!userID) {
+      console.error(`controllers: 404 userID is required for token refresh`);
+      return res.status(404).json({ error: "userID is required" });
     }
 
     const refreshToken = jwt.sign(
-      { userId },
+      { userID },
       process.env.REFRESH_TOKEN_SECRET,
       { expiresIn: "7d" }
     );
 
+    console.log("controllers: Refresh token successfully generated.");
     res.json({ refreshToken, expiresIn: 604800 }); // 604800 seconds = 7 days
   } catch (err) {
     console.error("controllers: 500 Error generating refresh token:", err);
@@ -64,6 +76,7 @@ export const generateRefreshToken = (req, res) => {
  */
 export const verifyAccessToken = (req, res) => {
   try {
+    console.log("controllers: verifyAccessToken called with:", req.body);
     const { refreshToken } = req.body;
 
     if (!refreshToken) {
@@ -133,6 +146,12 @@ export const verifyRefreshToken = (req, res) => {
 export const refreshAccessToken = (req, res) => {
   try {
     const { refreshToken, username, email } = req.body;
+
+    console.log("DEV: refreshAccessToken called with:", {
+      refreshToken,
+      username,
+      email,
+    });
 
     if (!refreshToken) {
       return res.status(401).json({ error: "Refresh token required" });

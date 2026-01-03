@@ -20,12 +20,30 @@ export const register = async (req, res) => {
     const { username, email, password, displayName } = req.body;
 
     // Validate input
-    if (!username || !email || !password) {
+    if (!username) {
       console.error(
-        "auth_ctrl: 400 Missing required fields for registration:",
+        "auth_ctrl: 400 Username missing / invalid from registration:",
         req.body
       );
       return res.status(400).json({ error: "Missing required fields" });
+    } else if (!email) {
+      console.error(
+        "auth_ctrl: 400 Email missing / invalid from registration:",
+        email
+      );
+      return res.status(400).json({ error: "Invalid email format" });
+    } else if (!password) {
+      console.error(
+        "auth_ctrl: 400 Password missing / invalid from registration",
+        password
+      );
+      return res.status(400).json({ error: "Invalid password format" });
+    } else if (!displayName) {
+      console.error(
+        "auth_ctrl: 400 Display name missing / invalid from registration",
+        displayName
+      );
+      return res.status(400).json({ error: "Invalid display name format" });
     }
 
     // Check if user exists
@@ -102,6 +120,9 @@ export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    console.log("auth_ctrl: Login attempt for email:", email);
+    console.log("auth_ctrl: Request body:", req.body);
+
     if (!email || !password) {
       console.error(
         "auth_ctrl: 400 Email and password required, field missing:",
@@ -140,7 +161,7 @@ export const login = async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
     res.json({
@@ -161,9 +182,38 @@ export const login = async (req, res) => {
 
 /**
  * @description Logout user by clearing refresh token cookie.
- * @param {Headers} req
+ * @param {Headers} req verifyToken middleware
  * @param {Headers} res
  */
+export const logout = async (req, res) => {
+  try {
+    console.log("auth_ctrl: Logout attempt for userId:", req.userId);
+    const userId = req.userId; // From verifyToken middleware
+
+    if (!userId) {
+      console.error("auth_ctrl: 401 User not authenticated for logout");
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+
+    // Clear refresh token cookie
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+    });
+
+    // Optional: Add userId to a blacklist/revocation list in Redis/DB
+    // This prevents the access token from being used even if copied
+    // await addToTokenBlacklist(userId, accessToken);
+
+    console.log(`auth_ctrl: User ${userId} logged out successfully`);
+    res.json({ message: "Logged out successfully" });
+  } catch (err) {
+    console.error("auth_ctrl: 500 Logout error:", err);
+    res.status(500).json({ error: "Logout failed", details: err.message });
+  }
+};
+/* 
 export const logout = async (req, res) => {
   try {
     // Clear refresh token cookie
@@ -173,7 +223,7 @@ export const logout = async (req, res) => {
     console.error("auth_ctrl: 500 Logout error:", err);
     res.status(500).json({ error: "Logout failed", details: err.message });
   }
-};
+}; */
 
 /**
  * @description Refresh access token using refresh token from cookie.

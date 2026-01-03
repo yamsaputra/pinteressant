@@ -13,14 +13,14 @@ import {
 const router = express.Router();
 
 // Token generation (called by backend after user validation)
-router.post('/generateAccessToken', generateAccessToken);
-router.post('/generateRefreshToken', generateRefreshToken);
+router.post('/token/access', generateAccessToken);
+router.post('/token/refresh', generateRefreshToken);
 
 // Token verification (called by backend to verify tokens)
-router.post('/verifyAccessToken', verifyAccessToken);
-router.post('/verifyRefreshToken', verifyRefreshToken);
+router.post('/token/verify', verifyAccessToken);
+router.post('/token/verify-refresh', verifyRefreshToken);
 
 // Token refresh (called by backend to refresh access tokens)
-router.post('/refreshAccessToken', refreshAccessToken);
+router.post('/token/refresh-access', refreshAccessToken);
 
 export default router;
