@@ -1,4 +1,3 @@
 # Pinteressant: An Advanced Software Engineering Project.
 
-Author: Yama Saputra
-
+Author: Yama Saputra, Philipp Ehrich
