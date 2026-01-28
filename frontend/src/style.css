@@ -1,0 +1,206 @@
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&display=swap");
+
+body{
+  margin: 0;
+  background: #f6f0e6; /* leicht beige */
+  color: #111;
+}
+
+.header{
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 24px 28px;
+}
+
+.title{
+  font-family: "Playfair Display", serif; /* schicke Schrift */
+  font-size: 26px;
+  letter-spacing: 0.06em;
+}
+
+.logo{
+  height: 100px; /* klein */
+  width: auto;
+}
+
+.content{
+  padding: 0 28px 40px;
+}
+
+button, input{
+  font: inherit;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,.15);
+  background: white;
+}
+
+button{ cursor: pointer; }
+button:hover{ background: rgba(255,255,255,.8); }
+
+.row{
+  margin-top: 12px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+#out{
+  margin-top: 14px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,.12);
+  background: rgba(255,255,255,.55);
+  min-height: 120px;
+  overflow: auto;
+}
+
+.content{
+  padding: 0 28px 40px;
+}
+
+.hint{
+  margin-top: 8px;
+  opacity: .8;
+}
+
+pre{
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(255,255,255,.6);
+  border: 1px solid rgba(0,0,0,.12);
+  overflow: auto;
+}
+
+.right{
+  display:flex;
+  align-items:flex-start;
+  gap: 12px;
+}
+
+.linkbtn{
+  border: none;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+  padding: 6px 8px;
+  opacity: .85;
+}
+.linkbtn:hover{ opacity: 1; }
+
+.pop{
+  position: fixed;
+  top: 58px;
+  right: 18px;
+  display: none;
+  z-index: 50;
+}
+.pop.open{ display:block; }
+
+.popcard{
+  width: 320px;
+  background: rgba(255,255,255,.95);
+  border: 1px solid rgba(0,0,0,.12);
+  border-radius: 14px;
+  padding: 12px;
+  box-shadow: 0 18px 40px rgba(0,0,0,.12);
+}
+
+.pophead{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom: 8px;
+}
+
+.poptitle{
+  font-weight: 600;
+}
+
+.xbtn{
+  border: none;
+  background: transparent;
+  font-size: 18px;
+  cursor: pointer;
+  opacity: .7;
+}
+.xbtn:hover{ opacity: 1; }
+
+.tabs{
+  display:flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.tab{
+  flex:1;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,.12);
+  background: transparent;
+  cursor: pointer;
+  opacity: .85;
+}
+.tab.active{
+  background: white;
+  opacity: 1;
+}
+
+.form{
+  display:flex;
+  flex-direction:column;
+  gap: 8px;
+}
+
+.form input, .form button{
+  font: inherit;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,.15);
+  background: white;
+}
+
+.form button{ cursor:pointer; }
+.hidden{ display:none; }
+
+.row{
+  display:flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+.row button{
+  flex:1;
+  font: inherit;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,.15);
+  background: white;
+  cursor:pointer;
+}
+
+.msg{
+  margin-top: 10px;
+  font-size: 12px;
+  opacity: .8;
+  word-break: break-word;
+}
+
+.left{ display:flex; flex-direction:column; gap:6px; }
+.status{ font-size:12px; opacity:.75; }
+
+.right{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+}
+
+.loggedin{
+  font-size: 12px;
+  opacity: .85;
+  white-space: nowrap;
+}
+
+
+
