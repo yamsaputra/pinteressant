@@ -6,7 +6,11 @@ export function getToken() {
 }
 
 export function setToken(token) {
-  if (token) localStorage.setItem(TOKEN_KEY, token);
+  if (token) {
+    localStorage.setItem(TOKEN_KEY, token);
+  } else {
+    localStorage.removeItem(TOKEN_KEY);
+  }
 }
 
 export function clearToken() {
@@ -31,7 +35,7 @@ async function parseResponse(res) {
   return { ok: res.ok, status: res.status, data };
 }
 
-// ✅ Register braucht: username + email + password + displayName
+// Register braucht: username + email + password + displayName
 export async function register({ email, username, password, displayName }) {
   const res = await fetch("/api/auth/register", {
     method: "POST",
@@ -49,7 +53,7 @@ export async function register({ email, username, password, displayName }) {
   return data;
 }
 
-// ✅ Login braucht: email + password (NICHT username)
+// Login braucht: email + password (NICHT username)
 export async function login({ email, password }) {
   const res = await fetch("/api/auth/login", {
     method: "POST",
@@ -67,24 +71,40 @@ export async function login({ email, password }) {
   return data;
 }
 
-// ✅ Refresh braucht userId im Body
 export async function refresh() {
-  const userId = getUserId();
-  if (!userId) throw new Error("No userId saved (login/register first)");
+  try {
+    let userId = getUserId();
+    const token = getToken();
 
-  const res = await fetch("/api/auth/refresh", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify({ userId }),
-  });
+    if (!userId && token) {
+      userId = getUserIdFromAccessToken(token);
+      if (userId) setUserId(userId);
+    }
 
-  const { ok, data } = await parseResponse(res);
-  if (!ok) throw new Error(typeof data === "string" ? data : JSON.stringify(data));
+    if (!userId) {
+      clearToken();
+      clearUserId();
+      throw new Error("Kein userId verfügbar – bitte neu einloggen.");
+    }
 
-  if (data?.accessToken) setToken(data.accessToken);
-  return data;
+    const res = await apiPost("/api/auth/refresh", { userId });
+    if (!res?.accessToken) {
+      clearToken();
+      clearUserId();
+      throw new Error("Refresh hat kein accessToken geliefert.");
+    }
+
+    setToken(res.accessToken);
+    return res.accessToken;
+
+  } catch (err) {
+    clearToken();
+    clearUserId();
+    throw err;
+  }
 }
+
+
 
 export async function me() {
   const token = getToken();

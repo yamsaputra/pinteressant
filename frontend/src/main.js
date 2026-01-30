@@ -37,6 +37,10 @@ function render(user) {
       <pre id="out">…</pre>
     </div>
 
+    <div class="notification" id="notification" style="display:none;">
+      <div class="notif-card" id="notifContent"></div>
+    </div>
+
     <div class="pop" id="pop" aria-hidden="true">
       <div class="popcard">
         <div class="pophead">
@@ -130,6 +134,16 @@ function render(user) {
     msg.textContent = "";
   };
 
+  const showNotification = (message) => {
+    const notif = $("#notification");
+    const notifContent = $("#notifContent");
+    notifContent.textContent = message;
+    notif.style.display = "flex";
+    setTimeout(() => {
+      notif.style.display = "none";
+    }, 15000);
+  };
+
   // Actions
   $("#doLogin").onclick = async () => {
     msg.textContent = "Login…";
@@ -139,10 +153,21 @@ function render(user) {
         password: $("#l_pass").value.trim(),
       });
       msg.textContent = "Login OK ✅";
-      out.textContent = JSON.stringify(data, null, 2);
       closePop();
-      await bootstrap(); // UI oben umschalten
+      
+      console.log("Login erfolgreich, Token:", data?.accessToken?.substring(0, 20) + "...");
+      await new Promise(r => setTimeout(r, 500));
+      await bootstrap();
+      
+      // Notification NACH bootstrap
+      const notif = $("#notification");
+      if (notif) {
+        $("#notifContent").textContent = "✅ Erfolgreich eingeloggt als: " + (data?.displayName || data?.username || data?.email);
+        notif.style.display = "flex";
+        setTimeout(() => { notif.style.display = "none"; }, 15000);
+      }
     } catch (e) {
+      console.error("Login Fehler:", e);
       msg.textContent = "Fehler ❌ " + (e?.message || String(e));
     }
   };
@@ -156,11 +181,21 @@ function render(user) {
         username: $("#r_user").value.trim(),
         password: $("#r_pass").value.trim(),
       });
-      msg.textContent = "Register OK ✅";
-      out.textContent = JSON.stringify(data, null, 2);
       closePop();
-      await bootstrap(); // UI oben umschalten
+      
+      console.log("Register erfolgreich, bootstrap wird aufgerufen...");
+      await new Promise(r => setTimeout(r, 300));
+      await bootstrap();
+      
+      // Notification NACH bootstrap
+      const notif = $("#notification");
+      if (notif) {
+        $("#notifContent").textContent = "✅ Erfolgreich registriert als: " + (data?.displayName || data?.username || data?.email);
+        notif.style.display = "flex";
+        setTimeout(() => { notif.style.display = "none"; }, 15000);
+      }
     } catch (e) {
+      console.error("Register Fehler:", e);
       msg.textContent = "Fehler ❌ " + (e?.message || String(e));
     }
   };
@@ -171,16 +206,28 @@ async function bootstrap() {
   let user = null;
 
   try {
-    if (getToken()) user = await me();
-  } catch (_) {}
+    const token = getToken();
+    console.log("Token vorhanden:", !!token);
+    if (token) {
+      user = await me();
+      console.log("User von me():", user);
+    }
+  } catch (e) {
+    console.error("me() Fehler:", e.message);
+  }
 
   if (!user) {
     try {
-      await refresh(); // braucht userId im localStorage (kommt von login/register)
+      console.log("Versuche refresh()...");
+      await refresh();
       user = await me();
-    } catch (_) {}
+      console.log("User nach refresh:", user);
+    } catch (e) {
+      console.error("refresh() Fehler:", e.message);
+    }
   }
 
+  console.log("Final user object:", user);
   render(user);
 }
 
