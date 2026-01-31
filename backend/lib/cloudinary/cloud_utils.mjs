@@ -1,4 +1,4 @@
-import cloudinary from "./cloudConfig.mjs";
+import cloudinary from "./cloud_config.mjs";
 
 // Upload image form URL or file path
 export const uploadImage = async (imagePath, folder = "pins") => {
