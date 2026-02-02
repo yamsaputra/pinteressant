@@ -235,6 +235,8 @@ export const refresh = async (req, res) => {
   try {
     const refreshToken = req.cookies.refreshToken;
 
+    console.log("auth_ctrl: Refresh token request received.", { refreshToken } );
+
     if (!refreshToken) {
       console.error("auth_ctrl: 401 No refresh token provided");
       return res.status(401).json({ error: "No refresh token provided" });

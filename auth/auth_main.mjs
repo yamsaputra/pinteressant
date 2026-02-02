@@ -45,7 +45,7 @@ class authServer {
     this.setupRoutes();
 
     this.app.listen(this.port, () => {
-      console.log(`Auth server is running on port ${this.port}`);
+      console.log(`Auth server for Pinteressant is running on port ${this.port}`);
     });
   }
 }

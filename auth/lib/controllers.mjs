@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 
 /**
  * @description Generate an access token for the user.
- * @param {Headers} req
+ * @param {Headers} req userID, username, email in body
  * @param {Response} res
  * @returns
  */
@@ -76,17 +76,30 @@ export const generateRefreshToken = (req, res) => {
  */
 export const verifyAccessToken = (req, res) => {
   try {
-    console.log("controllers: verifyAccessToken called with:", req.body);
-    const { refreshToken } = req.body;
+    // Extract token from Authorization header OR body
+    const authHeader = req.headers.authorization;
+    let accessToken = req.body.accessToken;
 
-    if (!refreshToken) {
-      console.error("controllers: 404 No refresh token provided");
-      return res
-        .status(404)
-        .json({ valid: false, error: "No refresh token provided" });
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      accessToken = authHeader.split(" ")[1];
     }
 
-    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+    if (!accessToken) {
+      console.error("controllers: 404 No access token provided");
+      return res
+        .status(404)
+        .json({ valid: false, error: "No access token provided" });
+    }
+
+    console.log("controllers: DEV verifyAccessToken:", {
+      accessToken,
+    });
+    console.log(
+      "controllers: DEV Using secret:",
+      process.env.ACCESS_TOKEN_SECRET
+    );
+
+    const decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
 
     res.json({
       valid: true,
@@ -94,13 +107,13 @@ export const verifyAccessToken = (req, res) => {
     });
   } catch (err) {
     if (err.name === "TokenExpiredError") {
-      console.error("controllers: 401 Refresh token expired:\n", err);
+      console.error("controllers: 401 Access token expired:\n", err);
       return res
         .status(401)
-        .json({ valid: false, error: "Refresh token expired" });
+        .json({ valid: false, error: "Access token expired" });
     }
-    console.error("controllers: 401 Invalid refresh token:\n", err);
-    res.status(401).json({ valid: false, error: "Invalid refresh token" });
+    console.error("controllers: 401 Invalid access token:\n", err);
+    res.status(401).json({ valid: false, error: "Invalid access token" });
   }
 };
 
@@ -113,7 +126,17 @@ export const verifyAccessToken = (req, res) => {
  */
 export const verifyRefreshToken = (req, res) => {
   try {
-    const { refreshToken } = req.body;
+    // Extract token from Authorization header OR body
+    const authHeader = req.headers.authorization;
+    let refreshToken = req.body.refreshToken;
+
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      refreshToken = authHeader.split(" ")[1];
+    }
+
+    console.log("controllers: verifyRefreshToken:", {
+      refreshToken,
+    });
 
     if (!refreshToken) {
       return res
@@ -121,7 +144,7 @@ export const verifyRefreshToken = (req, res) => {
         .json({ valid: false, error: "No refresh token provided" });
     }
 
-    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+    const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
 
     res.json({
       valid: true,
@@ -158,14 +181,18 @@ export const refreshAccessToken = (req, res) => {
     }
 
     // Verify refresh token
-    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+    const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
 
     // Generate new access token
     const newAccessToken = jwt.sign(
       { userId: decoded.userId, username, email },
-      process.env.JWT_SECRET,
+      process.env.ACCESS_TOKEN_SECRET,
       { expiresIn: "15m" }
     );
+
+    console.log("controllers: New access token generated via refresh token:", {
+      newAccessToken,
+    });
 
     res.json({
       accessToken: newAccessToken,

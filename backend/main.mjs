@@ -2,6 +2,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
+import cors from "cors";
 
 // Load environment variables from .env file
 dotenv.config();
@@ -21,6 +22,10 @@ class backendServer {
   }
 
   loadMiddlewares() {
+    this.app.use(cors({
+      origin: true,
+      credentials: true,
+    }));
     this.app.use(express.json());
     this.app.use(cookieParser());
   }
