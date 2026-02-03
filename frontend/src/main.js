@@ -9,7 +9,7 @@ const $ = (sel) => document.querySelector(sel);
 function esc(str) {
   return (str ?? "")
     .toString()
-    
+
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
@@ -655,6 +655,8 @@ function render(user) {
     btnAdd.onclick = async () => {
       const file = pendingFiles?.[0];
       if (!file) return;
+
+      console.log("Bild hinzugefügt:", file);
 
       try {
         btnAdd.disabled = true;
