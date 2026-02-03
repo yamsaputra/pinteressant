@@ -9,6 +9,7 @@ const $ = (sel) => document.querySelector(sel);
 function esc(str) {
   return (str ?? "")
     .toString()
+    
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
@@ -105,16 +106,23 @@ async function fileToDataUrl(file) {
 
 /** ===== API upload ===== */
 async function apiUploadImageDataUrl(dataUrl) {
+  // Bilder per FormData senden, um große Datenmengen zu unterstützen
+  const formData = new FormData();
+  formData.append("image", dataUrl);
+  console.log("apiUploadImageDataUrl: Uploading image via /api/upload");
+
+
   const res = await fetch("/api/upload", {
     method: "POST",
     headers: {
-      "Content-Type": "application/json",
       Authorization: "Bearer " + getToken(),
+      ContentType: "multipart/form-data",
     },
-    body: JSON.stringify({ imageURL: dataUrl }),
+    body: formData,
   });
 
   const text = await res.text();
+  console.log("apiUploadImageDataUrl: Upload response text:", text);
 
   let data;
   try {
