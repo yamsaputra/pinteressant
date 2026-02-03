@@ -20,7 +20,7 @@ export const uploadPhoto = async (req, res) => {
       location,
       dateTaken,
     } = req.body;
-    const userID = req.user.Id; // Assuming user ID is set in req.user by auth middleware
+    const userID = req.userId; // Assuming user ID is set in req.userId by auth middleware
 
     if (albumID) {
       const album = await Album.findById(albumID);
@@ -35,18 +35,20 @@ export const uploadPhoto = async (req, res) => {
 
     const newPhoto = await Photo.create({
       title,
-      description,
-      imageURL: uploadResult.url,
-      publicID: uploadResult.publicID,
-      width: uploadResult.width,
-      height: uploadResult.height,
-      thumbnailURL: getThumbnailURL(uploadResult.publicID),
-      owner: userID,
-      album: albumID || null,
-      tags: tags || [],
-      camera,
-      location,
-      dateTaken,
+  description,
+  image: {
+    url: uploadResult.url,
+    publicID: uploadResult.publicID,
+  },
+  width: uploadResult.width,
+  height: uploadResult.height,
+  thumbnailURL: getThumbnailURL(uploadResult.publicID),
+  owner: userID,
+  album: albumID || null,
+  tags: tags || [],
+  camera,
+  location,
+  dateTaken,
     });
 
     res
@@ -63,7 +65,7 @@ export const uploadPhoto = async (req, res) => {
 export const getMyPhotos = async (req, res) => {
   try {
     const { page = 1, limit = 20, album } = req.query;
-    const userID = req.user.Id;
+    const userID = req.userId;
 
     const query = { owner: userID };
     if (album) query.album = album;
@@ -94,7 +96,7 @@ export const getMyPhotos = async (req, res) => {
 export const updatePhoto = async (req, res) => {
   try {
     const { id } = req.params;
-    const userID = req.user.Id;
+    const userID = req.userId;
 
     const photo = await Photo.findById(id);
     if (!photo) {
@@ -118,7 +120,7 @@ export const updatePhoto = async (req, res) => {
 export const deletePhoto = async (req, res) => {
   try {
     const { id } = req.params;
-    const userID = req.user.Id;
+    const userID = req.userId;
 
     const photo = await Photo.findById(id);
     if (!photo) {

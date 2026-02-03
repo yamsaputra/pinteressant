@@ -11,6 +11,7 @@ dotenv.config();
 import { connectMongoDB } from "./lib/db/mongoDB.mjs";
 import auth_routes from "./lib/routes/auth_routes.mjs";
 import portfolio_routes from "./lib/routes/portfolio_routes.mjs";
+import upload_routes from "./lib/routes/upload_routes.mjs";
 
 /**
  * Backend server class
@@ -26,7 +27,12 @@ class backendServer {
       origin: true,
       credentials: true,
     }));
-    this.app.use(express.json());
+
+    // JSON Body Parser (WICHTIG für req.body beim Upload)
+    // Limit hoch, weil Base64-DataURLs sonst zu groß sind (sonst 413 / req.body = undefined)
+    this.app.use(express.json({ limit: "25mb" }));
+    this.app.use(express.urlencoded({ extended: true, limit: "25mb" }));
+
     this.app.use(cookieParser());
   }
 
@@ -42,6 +48,8 @@ class backendServer {
   setupRoutes() {
    this.app.use("/api", auth_routes);
     this.app.use("/api", portfolio_routes);
+     this.app.use("/api", upload_routes);
+
   }
   
   // Starts the backend server

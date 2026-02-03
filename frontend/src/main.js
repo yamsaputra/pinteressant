@@ -9,7 +9,6 @@ const $ = (sel) => document.querySelector(sel);
 function esc(str) {
   return (str ?? "")
     .toString()
-
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
@@ -98,27 +97,30 @@ async function filesToDataUrls(fileList) {
 async function fileToDataUrl(file) {
   return new Promise((resolve, reject) => {
     const r = new FileReader();
-    r.onload = () => resolve(r.result);
+    r.onload = () => resolve(r.result); // data:image/...;base64,...
     r.onerror = reject;
     r.readAsDataURL(file);
   });
 }
 
-/** ===== API upload ===== */
-async function apiUploadImageDataUrl(dataUrl) {
-  // Bilder per FormData senden, um große Datenmengen zu unterstützen
-  const formData = new FormData();
-  formData.append("image", dataUrl);
+/** ===== API upload (FIXED) =====
+ * Backend erwartet JSON req.body, inkl. title + imageURL (dataURL)
+ */
+async function apiUploadImageDataUrl({ dataUrl, title }) {
   console.log("apiUploadImageDataUrl: Uploading image via /api/upload");
 
 
   const res = await fetch("/api/upload", {
     method: "POST",
     headers: {
+      "Content-Type": "application/json",
       Authorization: "Bearer " + getToken(),
-      ContentType: "multipart/form-data",
     },
-    body: formData,
+    body: JSON.stringify({
+      title: title || "Upload",
+      description: "",
+      imageURL: dataUrl,
+    }),
   });
 
   const text = await res.text();
@@ -285,7 +287,7 @@ function readPrefsFromFormForPreview() {
 
 /** ========= UI ========= */
 function render(user) {
-  // direkt nach Render: Theme/Layout anwenden (nur logged-in anhand API)
+  // Theme/Layout sofort anwenden
   applyUserPrefs(user);
 
   const who = user?.displayName || user?.username || user?.email || "";
@@ -664,10 +666,24 @@ function render(user) {
         btnAdd.textContent = "Upload…";
 
         const dataUrl = await fileToDataUrl(file);
-        const uploaded = await apiUploadImageDataUrl(dataUrl);
+
+        // ✅ FIX: sende title + imageURL als JSON (Backend req.body ist dann nicht undefined)
+        const uploaded = await apiUploadImageDataUrl({
+          dataUrl,
+          title: file.name,
+        });
+
+        // je nachdem wie backend antwortet: photo.imageURL oder imageURL
+        const url =
+          uploaded?.photo?.imageURL ||
+          uploaded?.imageURL ||
+          uploaded?.url ||
+          uploaded?.photo?.url;
+
+        if (!url) throw new Error("Backend hat keine Bild-URL zurückgegeben.");
 
         const current = loadGallery();
-        saveGallery([uploaded.imageURL, ...current]);
+        saveGallery([url, ...current]);
         renderGallery();
 
         clearPending();
