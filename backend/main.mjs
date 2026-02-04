@@ -11,7 +11,7 @@ dotenv.config();
 import { connectMongoDB } from "./lib/db/mongoDB.mjs";
 import auth_routes from "./lib/routes/auth_routes.mjs";
 import portfolio_routes from "./lib/routes/portfolio_routes.mjs";
-import upload_routes from "./lib/routes/upload_routes.mjs";
+import photo_routes from "./lib/routes/photo_routes.mjs";
 
 /**
  * Backend server class

@@ -46,7 +46,8 @@ function applyGalleryLayout({ cols, gap }) {
   const nCols = Number(cols);
   const nGap = Number(gap);
 
-  const useCols = Number.isFinite(nCols) && nCols >= 1 && nCols <= 6 ? nCols : null;
+  const useCols =
+    Number.isFinite(nCols) && nCols >= 1 && nCols <= 6 ? nCols : null;
   const useGap = Number.isFinite(nGap) && nGap >= 0 && nGap <= 80 ? nGap : null;
 
   if (useGap !== null) root.style.setProperty("--gallery-gap", `${useGap}px`);
@@ -81,7 +82,9 @@ function applyUserPrefs(user) {
 
 /** ===== Helpers: previews ===== */
 async function filesToDataUrls(fileList) {
-  const files = Array.from(fileList || []).filter((f) => f.type.startsWith("image/"));
+  const files = Array.from(fileList || []).filter((f) =>
+    f.type.startsWith("image/"),
+  );
   const readers = files.map(
     (file) =>
       new Promise((resolve, reject) => {
@@ -89,7 +92,7 @@ async function filesToDataUrls(fileList) {
         r.onload = () => resolve(r.result);
         r.onerror = reject;
         r.readAsDataURL(file);
-      })
+      }),
   );
   return Promise.all(readers);
 }
@@ -107,8 +110,7 @@ async function fileToDataUrl(file) {
  * Backend erwartet JSON req.body, inkl. title + imageURL (dataURL)
  */
 async function apiUploadImageDataUrl({ dataUrl, title }) {
-  console.log("apiUploadImageDataUrl: Uploading image via /api/upload");
-
+  console.log("DEV api/upload: Uploading image via /api/upload");
 
   const res = await fetch("/api/upload", {
     method: "POST",
@@ -124,14 +126,14 @@ async function apiUploadImageDataUrl({ dataUrl, title }) {
   });
 
   const text = await res.text();
-  console.log("apiUploadImageDataUrl: Upload response text:", text);
+  console.log("DEV api/upload: Upload response text:", text);
 
   let data;
   try {
     data = JSON.parse(text);
   } catch {
     throw new Error(
-      `Upload hat kein JSON geliefert (Status ${res.status}). Antwort beginnt mit: ${text.slice(0, 60)}`
+      `Upload hat kein JSON geliefert (Status ${res.status}). Antwort beginnt mit: ${text.slice(0, 60)}`,
     );
   }
 
@@ -160,7 +162,7 @@ function renderGallery() {
           <img src="${src}" alt="upload ${i}" />
           <button class="xmini" data-i="${i}" title="Bild löschen">×</button>
         </div>
-      `
+      `,
     )
     .join("");
 
@@ -197,7 +199,7 @@ function renderPending() {
           <img src="${src}" alt="pending ${i}" />
           <button class="xmini" data-p="${i}" title="Auswahl entfernen">×</button>
         </div>
-      `
+      `,
     )
     .join("");
 
@@ -230,7 +232,10 @@ async function apiUpdateProfile(payload) {
   });
 
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data?.error || data?.details || "Profil konnte nicht gespeichert werden.");
+  if (!res.ok)
+    throw new Error(
+      data?.error || data?.details || "Profil konnte nicht gespeichert werden.",
+    );
   return data;
 }
 
@@ -627,14 +632,18 @@ function render(user) {
 
     toggleBtn.onclick = () => {
       panel.classList.toggle("hidden");
-      toggleBtn.textContent = panel.classList.contains("hidden") ? "Bild hochladen" : "Schließen";
+      toggleBtn.textContent = panel.classList.contains("hidden")
+        ? "Bild hochladen"
+        : "Schließen";
     };
 
     renderGallery();
     renderPending();
 
     input.onchange = async (e) => {
-      const files = Array.from(e.target.files || []).filter((f) => f.type.startsWith("image/"));
+      const files = Array.from(e.target.files || []).filter((f) =>
+        f.type.startsWith("image/"),
+      );
       if (!files.length) {
         pendingFiles = [];
         pendingPreviews = [];
@@ -675,13 +684,16 @@ function render(user) {
 
         // je nachdem wie backend antwortet: photo.imageURL oder imageURL
         const url =
-          uploaded?.photo?.imageURL ||
           uploaded?.imageURL ||
+          uploaded?.photo?.imageURL ||
+          uploaded?.photo?.image?.url ||
           uploaded?.url ||
-          uploaded?.photo?.url;
+          uploaded?.thumbnailURL;
 
-        if (!url) throw new Error("Backend hat keine Bild-URL zurückgegeben.");
-
+        if (!url) {
+          console.error("btnAdd.onclick: Upload response:", uploaded);
+          throw new Error("Backend hat keine Bild-URL zurückgegeben.");
+        }
         const current = loadGallery();
         saveGallery([url, ...current]);
         renderGallery();

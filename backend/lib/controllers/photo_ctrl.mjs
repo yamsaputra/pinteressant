@@ -22,8 +22,13 @@ export const uploadPhoto = async (req, res) => {
     } = req.body;
     const userID = req.userId; // Assuming user ID is set in req.userId by auth middleware
 
+    console.log("photo_ctrl: uploadPhoto called by user:", userID);
+    console.log("photo_ctrl: Received data:", req.body.title)
+
     if (albumID) {
       const album = await Album.findById(albumID);
+
+      console.log("photo_ctrl: Verifying album ownership for albumID:", albumID);
       if (!album || album.userID.toString() !== userID) {
         return res
           .status(403)
@@ -32,6 +37,8 @@ export const uploadPhoto = async (req, res) => {
     }
 
     const uploadResult = await uploadImage(imageURL, `portfolio/${userID}`);
+
+    console.log("photo_ctrl: Image uploaded to Cloudinary:", uploadResult);
 
     const newPhoto = await Photo.create({
       title,
