@@ -48,8 +48,7 @@ class backendServer {
   setupRoutes() {
    this.app.use("/api", auth_routes);
     this.app.use("/api", portfolio_routes);
-     this.app.use("/api", upload_routes);
-
+     this.app.use("/api", photo_routes);
   }
   
   // Starts the backend server

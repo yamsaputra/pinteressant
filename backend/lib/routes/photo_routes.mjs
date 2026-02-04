@@ -25,4 +25,11 @@ router.post("/upload", verifyToken, async (req, res, next) => {
   return uploadPhoto(req, res, next);
 });
 
+router.delete("/photos/:publicID", verifyToken, async (req, res, next) => {
+  // Adapter: Controller erwartet req.user.Id, middleware liefert req.userId
+  req.user = req.user || {};
+  req.user.Id = req.userId;
+  return deletePhoto(req, res, next);
+});
+
 export default router;

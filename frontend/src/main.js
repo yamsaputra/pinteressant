@@ -140,6 +140,21 @@ async function apiUploadImageDataUrl({ dataUrl, title }) {
   if (!res.ok) throw new Error(data?.error || data?.details || "Upload failed");
   return data;
 }
+/** ========= API Delete Function ========= */
+async function apiDeletePhoto(publicID) {
+  const res = await fetch(`/api/photos/${encodeURIComponent(publicID)}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: "Bearer " + getToken(),
+    },
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data?.error || "Löschen fehlgeschlagen");
+  }
+  return true;
+}
 
 /** ========= Pending selection ========= */
 let pendingFiles = [];
@@ -155,20 +170,41 @@ function renderGallery() {
     return;
   }
 
+  // Support both old format (string URLs) and new format (objects)
   galleryEl.innerHTML = imgs
-    .map(
-      (src, i) => `
+    .map((item, i) => {
+      const src = typeof item === "string" ? item : item.imageURL;
+      const pid = typeof item === "string" ? "" : item.publicID || "";
+      return `
         <div class="thumb">
           <img src="${src}" alt="upload ${i}" />
-          <button class="xmini" data-i="${i}" title="Bild löschen">×</button>
+          <button class="xmini" data-i="${i}" data-pid="${pid}" title="Bild löschen">×</button>
         </div>
-      `,
-    )
+      `;
+    })
     .join("");
 
   galleryEl.querySelectorAll(".xmini").forEach((btn) => {
-    btn.onclick = () => {
+    btn.onclick = async () => {
+      // ← Added async here
       const i = Number(btn.dataset.i);
+      const publicID = btn.dataset.pid;
+      console.log("DEV Deleting photo with publicID:", publicID);
+
+      // Delete from backend if we have a publicID
+      if (publicID) {
+        try {
+          btn.disabled = true;
+          btn.textContent = "…";
+          await apiDeletePhoto(publicID);
+        } catch (e) {
+          alert("Löschen fehlgeschlagen: " + e.message);
+          btn.disabled = false;
+          btn.textContent = "×";
+          return;
+        }
+      }
+
       const next = loadGallery().filter((_, idx) => idx !== i);
       saveGallery(next);
       renderGallery();
@@ -690,12 +726,21 @@ function render(user) {
           uploaded?.url ||
           uploaded?.thumbnailURL;
 
+        // PublicID speichern für Lösch-Feature
+        const publicID =
+          uploaded?.publicID ||
+          uploaded?.photo?.publicID ||
+          uploaded?.photo?.image?.publicID;
+
         if (!url) {
           console.error("btnAdd.onclick: Upload response:", uploaded);
           throw new Error("Backend hat keine Bild-URL zurückgegeben.");
         }
         const current = loadGallery();
-        saveGallery([url, ...current]);
+        saveGallery([
+          { imageURL: url, publicID: publicID || null },
+          ...current,
+        ]);
         renderGallery();
 
         clearPending();
