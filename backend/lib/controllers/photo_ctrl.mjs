@@ -129,6 +129,8 @@ export const deletePhoto = async (req, res) => {
     const { id } = req.params;
     const userID = req.userId;
 
+    console.log("DEV: request body:", req.params)
+
     console.log("photo_ctrl: deletePhoto called by user:", userID, "for photo ID:", id);
 
     const photo = await Photo.findById(id);
