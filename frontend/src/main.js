@@ -142,7 +142,9 @@ async function apiUploadImageDataUrl({ dataUrl, title }) {
 }
 /** ========= API Delete Function ========= */
 async function apiDeletePhoto(publicID) {
-  const res = await fetch(`/api/photos/${encodeURIComponent(publicID)}`, {
+  const deleteAPI = `/api/photos/${encodeURIComponent(publicID)}`;
+  console.log("DEV apiDeletePhoto: Deleting photo via", deleteAPI);
+  const res = await fetch(deleteAPI, {
     method: "DELETE",
     headers: {
       Authorization: "Bearer " + getToken(),
@@ -189,6 +191,7 @@ function renderGallery() {
       // ← Added async here
       const i = Number(btn.dataset.i);
       const publicID = btn.dataset.pid;
+      console.log(`DEV btn.dataset: ${btn.dataset}`)
       console.log("DEV Deleting photo with publicID:", publicID);
 
       // Delete from backend if we have a publicID

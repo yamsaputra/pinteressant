@@ -126,38 +126,38 @@ export const updatePhoto = async (req, res) => {
 // Delete photo
 export const deletePhoto = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { publicID } = req.params;
     const userID = req.userId;
 
-    console.log("DEV: request body:", req.params)
+    // Decode the publicID (it contains slashes like "portfolio/user123/abc")
+    const decodedPublicID = decodeURIComponent(publicID);
 
-    console.log("photo_ctrl: deletePhoto called by user:", userID, "for photo ID:", id);
+    console.log("photo_ctrl: deletePhoto called by user:", userID, "for publicID:", decodedPublicID);
 
-    const photo = await Photo.findById(id);
+    // 1. Erst Photo aus MongoDB suchen (nach image.publicID)
+    const photo = await Photo.findOne({ "image.publicID": decodedPublicID });
+    
     if (!photo) {
-      console.error("photo_ctrl: 404 Photo not found for ID:", id);
+      console.error("photo_ctrl: 404 Photo not found for publicID:", decodedPublicID);
       return res.status(404).json({ error: "Photo not found." });
     }
 
+    // 2. Ownership prüfen
     if (photo.owner.toString() !== userID) {
-      console.error(
-        "photo_ctrl: 403 Unauthorized delete attempt by user:",
-        userID
-      );
-      return res
-        .status(403)
-        .json({ error: "Unauthorized to delete this photo." });
+      console.error("photo_ctrl: 403 Unauthorized delete attempt by user:", userID);
+      return res.status(403).json({ error: "Unauthorized to delete this photo." });
     }
 
-    await deleteImage(photo.image.publicID);
-    await Photo.findByIdAndDelete(id);
+    // 3. Aus Cloudinary löschen
+    await deleteImage(decodedPublicID);
 
-    console.log("photo_ctrl: 204 Photo deleted successfully for ID:", id);
+    // 4. Aus MongoDB löschen
+    await Photo.findByIdAndDelete(photo._id);
+
+    console.log("photo_ctrl: 204 Photo deleted successfully for publicID:", decodedPublicID);
     res.json({ message: "Photo deleted successfully.", status: 204 });
   } catch (err) {
     console.error("photo_ctrl: 500 Error deleting photo:", err);
-    res
-      .status(500)
-      .json({ error: "Failed to delete photo.", details: err.message });
+    res.status(500).json({ error: "Failed to delete photo.", details: err.message });
   }
 };
