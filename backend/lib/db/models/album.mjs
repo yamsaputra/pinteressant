@@ -1,3 +1,9 @@
+/**
+ * @title Album Schema
+ * @description Mongoose schema for photo albums. Each album belongs to a user (owner), has a unique slug per user, layout settings, and publishing/navigation flags.
+ * @module db/models/album
+ */
+
 // Import statements
 import mongoose from "mongoose";
 

@@ -2,10 +2,14 @@
 import { User, Album, Photo } from "../db/models/model_index.mjs";
 
 /**
- * @description Get public portfolio data for a user.
- * @param {Headers} req 
- * @param {Headers} res 
- * @returns 
+ * @title Get Portfolio
+ * @description Fetches public portfolio data for a user by username, including profile info and published albums.
+ * @route GET /api/portfolio/:username
+ * @access Public
+ * @param {String} req.params.username - Username of the portfolio owner
+ * @param {*} res - status 200 with user profile and albums
+ * @throws 404 if portfolio not found (user does not exist or is inactive), 500 if fetch fails
+ * @returns 200 with user (profile fields) and albums (published, navigable, with cover photos)
  */
 export const getPortfolio = async (req, res) => {
   try {
@@ -37,10 +41,15 @@ export const getPortfolio = async (req, res) => {
 };
 
 /**
- * @description Get a specific album and its photos from a user's portfolio.
- * @param {Headers} req 
- * @param {Headers} res 
- * @returns 
+ * @title Get Portfolio Album
+ * @description Fetches a specific published album and its published photos from a user's public portfolio.
+ * @route GET /api/portfolio/:username/:slug
+ * @access Public
+ * @param {String} req.params.username - Username of the portfolio owner
+ * @param {String} req.params.slug - URL slug of the album
+ * @param {*} res - status 200 with album, photos, and user data
+ * @throws 404 if portfolio or album not found, 500 if fetch fails
+ * @returns 200 with album, photos array, and user object
  */
 export const getPortfolioAlbum = async (req, res) => {
   try {

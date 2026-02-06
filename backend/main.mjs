@@ -1,3 +1,9 @@
+/**
+ * @title Backend Server
+ * @description Main Express backend server class. Configures middleware, routes, and connects to MongoDB.
+ * @module main
+ */
+
 // Import statements
 import express from "express";
 import dotenv from "dotenv";
@@ -14,7 +20,8 @@ import portfolio_routes from "./lib/routes/portfolio_routes.mjs";
 import photo_routes from "./lib/routes/photo_routes.mjs";
 
 /**
- * Backend server class
+ * @title Backend Server Class
+ * @description Express server with middleware, route setup, and MongoDB connection management.
  */
 class backendServer {
   constructor(port) {

@@ -1,3 +1,9 @@
+/**
+ * @title Portfolio Routes
+ * @description Defines public portfolio API routes for viewing user portfolios and albums.
+ * @module routes/portfolio_routes
+ */
+
 // Import external libraries
 import express from "express";
 

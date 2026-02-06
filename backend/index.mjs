@@ -1,3 +1,8 @@
+/**
+ * @title Backend Routes
+ * @description Legacy route class providing a basic status/health check endpoint.
+ * @module index
+ */
 export class backendRoutes {
   constructor(app) {
     this.app = app;

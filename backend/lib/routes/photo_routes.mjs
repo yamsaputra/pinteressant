@@ -1,3 +1,9 @@
+/**
+ * @title Photo Routes
+ * @description Defines photo upload, deletion, and management API routes.
+ * @module routes/photo_routes
+ */
+
 // Upload-Routen (API-Endpunkte fürs Foto-Upload)
 import express from "express";
 

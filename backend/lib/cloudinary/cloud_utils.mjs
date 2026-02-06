@@ -1,6 +1,13 @@
 import cloudinary from "./cloud_config.mjs";
 
-// Upload image form URL or file path
+/**
+ * @title Upload Image
+ * @description Uploads an image to Cloudinary from a URL, file path, or base64 data URL.
+ * @param {String} imagePath - Image source (URL, file path, or base64 data URL)
+ * @param {String} [folder="pins"] - Cloudinary folder to upload into
+ * @throws Error if Cloudinary upload fails
+ * @returns {Object} Upload result with url, publicID, width, and height
+ */
 export const uploadImage = async (imagePath, folder = "pins") => {
   try {
     const result = await cloudinary.uploader.upload(imagePath, {
@@ -19,7 +26,13 @@ export const uploadImage = async (imagePath, folder = "pins") => {
   }
 }
 
-// Delete image by public ID
+/**
+ * @title Delete Image
+ * @description Deletes an image from Cloudinary by its public ID.
+ * @param {String} publicID - Cloudinary public ID of the image to delete
+ * @throws Error if Cloudinary deletion fails
+ * @returns {Object} Cloudinary destruction result
+ */
 export const deleteImage = async (publicID) => {
   try {
     const result = await cloudinary.uploader.destroy(publicID);
@@ -30,7 +43,12 @@ export const deleteImage = async (publicID) => {
   }
 };
 
-// Get optimized URL
+/**
+ * @title Get Optimized URL
+ * @description Generates an optimized Cloudinary URL with automatic quality and format.
+ * @param {String} publicID - Cloudinary public ID of the image
+ * @returns {String} Optimized image URL
+ */
 export const getOptimizedURL = (publicID) => {
     return cloudinary.url(publicID, {
         quality: "auto",
@@ -38,7 +56,14 @@ export const getOptimizedURL = (publicID) => {
     });
 };
 
-// Get thumbnail URL
+/**
+ * @title Get Thumbnail URL
+ * @description Generates a cropped thumbnail URL from Cloudinary with automatic gravity and quality.
+ * @param {String} publicID - Cloudinary public ID of the image
+ * @param {Number} [width=300] - Thumbnail width in pixels
+ * @param {Number} [height=300] - Thumbnail height in pixels
+ * @returns {String} Thumbnail image URL
+ */
 export const getThumbnailURL = (publicID, width = 300, height = 300) => {
     return cloudinary.url(publicID, {
         width: width,

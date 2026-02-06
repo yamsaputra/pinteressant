@@ -4,8 +4,20 @@ import { login, register, refresh, me, logout, getToken } from "./auth.js";
 const LOGO_PATH = "/Pinteressant_Probe_Logo.png";
 const PROFILE_ICON_PATH = "/profile_icon.png"; // -> /frontend/public/profile_icon.png
 
+/**
+ * @title Query Selector Shortcut
+ * @description Kurzform für document.querySelector, gibt das erste passende DOM-Element zurück.
+ * @param {String} sel - CSS-Selektor
+ * @returns {HTMLElement|null} Gefundenes DOM-Element oder null
+ */
 const $ = (sel) => document.querySelector(sel);
 
+/**
+ * @title Escape HTML
+ * @description Escaped einen String für sichere HTML-Ausgabe (verhindert XSS). Ersetzt &, <, >, ", ' durch HTML-Entities.
+ * @param {String} str - Zu escapender String
+ * @returns {String} HTML-sicherer String
+ */
 function esc(str) {
   return (str ?? "")
     .toString()
@@ -23,6 +35,11 @@ function esc(str) {
  */
 const GALLERY_KEY = "myGalleryImages";
 
+/**
+ * @title Load Gallery
+ * @description Lädt die Galerie-Daten (Bild-URLs und PublicIDs) aus dem localStorage.
+ * @returns {Array} Array von Galerie-Einträgen (Objekte mit imageURL/publicID oder Strings)
+ */
 function loadGallery() {
   try {
     return JSON.parse(localStorage.getItem(GALLERY_KEY) || "[]");
@@ -30,16 +47,32 @@ function loadGallery() {
     return [];
   }
 }
+/**
+ * @title Save Gallery
+ * @description Speichert die Galerie-Daten als JSON-Array im localStorage.
+ * @param {Array} arr - Array von Galerie-Einträgen zum Speichern
+ */
 function saveGallery(arr) {
   localStorage.setItem(GALLERY_KEY, JSON.stringify(arr));
 }
 
-/** ===== Theme/Layout Apply ===== */
+/**
+ * @title Apply Theme
+ * @description Setzt das Farbthema (light/dark) auf dem HTML-Root-Element.
+ * @param {String} theme - "light" oder "dark"
+ */
 function applyTheme(theme) {
   const t = theme === "dark" ? "dark" : "light";
   document.documentElement.dataset.theme = t;
 }
 
+/**
+ * @title Apply Gallery Layout
+ * @description Setzt CSS-Custom-Properties für Spaltenanzahl und Abstand der Galerie und wendet sie auf Gallery-Elemente an.
+ * @param {Object} options - Layout-Optionen
+ * @param {Number|null} options.cols - Anzahl der Spalten (1–6) oder null für Auto-Layout
+ * @param {Number|null} options.gap - Abstand in Pixeln (0–80) oder null für Standard
+ */
 function applyGalleryLayout({ cols, gap }) {
   const root = document.documentElement;
 
@@ -65,6 +98,11 @@ function applyGalleryLayout({ cols, gap }) {
   });
 }
 
+/**
+ * @title Apply User Preferences
+ * @description Wendet Theme und Gallery-Layout basierend auf den portfolioSettings des Benutzers an. Setzt Standardwerte wenn nicht eingeloggt.
+ * @param {Object|null} user - User-Objekt mit portfolioSettings oder null
+ */
 function applyUserPrefs(user) {
   if (!user) {
     // nicht eingeloggt -> immer light und Standardlayout
@@ -80,7 +118,12 @@ function applyUserPrefs(user) {
   applyGalleryLayout({ cols, gap });
 }
 
-/** ===== Helpers: previews ===== */
+/**
+ * @title Files to Data URLs
+ * @description Konvertiert eine FileList in ein Array von Base64-Data-URLs. Filtert nur Bilddateien.
+ * @param {FileList} fileList - Liste von Dateien aus einem File-Input
+ * @returns {Promise<String[]>} Array von Base64-Data-URL-Strings
+ */
 async function filesToDataUrls(fileList) {
   const files = Array.from(fileList || []).filter((f) =>
     f.type.startsWith("image/"),
@@ -97,6 +140,12 @@ async function filesToDataUrls(fileList) {
   return Promise.all(readers);
 }
 
+/**
+ * @title File to Data URL
+ * @description Konvertiert eine einzelne Datei in eine Base64-Data-URL.
+ * @param {File} file - Datei-Objekt zum Konvertieren
+ * @returns {Promise<String>} Base64-Data-URL der Datei
+ */
 async function fileToDataUrl(file) {
   return new Promise((resolve, reject) => {
     const r = new FileReader();
@@ -106,8 +155,14 @@ async function fileToDataUrl(file) {
   });
 }
 
-/** ===== API upload (FIXED) =====
- * Backend erwartet JSON req.body, inkl. title + imageURL (dataURL)
+/**
+ * @title API Upload Image
+ * @description Lädt ein Bild als Base64-Data-URL über die Backend-API hoch (POST /api/upload). Sendet Titel und imageURL als JSON.
+ * @param {Object} options - Upload-Optionen
+ * @param {String} options.dataUrl - Base64-Data-URL des Bildes
+ * @param {String} [options.title="Upload"] - Titel des Bildes
+ * @throws Error bei fehlgeschlagenem Upload oder ungültiger Server-Antwort
+ * @returns {Object} Upload-Antwort mit photo-Objekt (inkl. image.url, image.publicID)
  */
 async function apiUploadImageDataUrl({ dataUrl, title }) {
   console.log("DEV api/upload: Uploading image via /api/upload");
@@ -140,7 +195,13 @@ async function apiUploadImageDataUrl({ dataUrl, title }) {
   if (!res.ok) throw new Error(data?.error || data?.details || "Upload failed");
   return data;
 }
-/** ========= API Delete Function ========= */
+/**
+ * @title API Delete Photo
+ * @description Löscht ein Foto über die Backend-API anhand der Cloudinary publicID (DELETE /api/photos/:publicID).
+ * @param {String} publicID - Cloudinary Public ID des Bildes (z.B. "portfolio/user123/abc")
+ * @throws Error bei fehlgeschlagener Löschung
+ * @returns {Boolean} true bei erfolgreicher Löschung
+ */
 async function apiDeletePhoto(publicID) {
   const deleteAPI = `/api/photos/${encodeURIComponent(publicID)}`;
   console.log("DEV apiDeletePhoto: Deleting photo via", deleteAPI);
@@ -162,6 +223,10 @@ async function apiDeletePhoto(publicID) {
 let pendingFiles = [];
 let pendingPreviews = [];
 
+/**
+ * @title Render Gallery
+ * @description Rendert die Galerie mit den Bildern aus loadGallery() und bindet die Lösch-Buttons ein. Beim Klick auf Löschen wird das Bild aus der Galerie entfernt und, falls es eine publicID hat, auch über die API gelöscht.
+ */
 function renderGallery() {
   const galleryEl = $("#gallery");
   if (!galleryEl) return;
@@ -215,6 +280,10 @@ function renderGallery() {
   });
 }
 
+/**
+ * @title Render Pending Selection
+ * @description Rendert die Pending-Auswahl mit Vorschaubildern und bindet die Entfernen-Buttons ein. Beim Klick auf Entfernen wird das Bild aus der Pending-Auswahl entfernt.
+ */
 function renderPending() {
   const wrap = $("#pending");
   const btnAdd = $("#addSelected");
@@ -252,6 +321,10 @@ function renderPending() {
   });
 }
 
+/**
+ * @title Clear Pending Selection
+ * @description Löscht die aktuelle Pending-Auswahl, leert die pendingFiles und pendingPreviews Arrays und aktualisiert die UI entsprechend.
+ */
 function clearPending() {
   pendingFiles = [];
   pendingPreviews = [];
@@ -259,7 +332,13 @@ function clearPending() {
   if (input) input.value = "";
 }
 
-/* ===== Profile API + helpers ===== */
+/**
+ * @title API Update Profile
+ * @description Sendet aktualisierte Profildaten an die Backend-API (PUT /api/auth/profile).
+ * @param {Object} payload - Zu aktualisierende Profilfelder (z.B. displayName, socialLinks, portfolioSettings)
+ * @throws Error bei fehlgeschlagenem Update oder Server-Fehler
+ * @returns {Object} API-Antwort mit aktualisiertem user-Objekt
+ */
 async function apiUpdateProfile(payload) {
   const res = await fetch("/api/auth/profile", {
     method: "PUT",
@@ -278,6 +357,12 @@ async function apiUpdateProfile(payload) {
   return data;
 }
 
+/**
+ * @title Set Profile Status
+ * @description Setzt den Status-Text und -Typ im Profil-Popup (z.B. Erfolg, Fehler, Info).
+ * @param {String} text - Anzuzeigender Status-Text
+ * @param {String} [type="info"] - Status-Typ: "info", "success" oder "error"
+ */
 function setProfileStatus(text, type = "info") {
   const el = $("#profileStatus");
   if (!el) return;
@@ -285,6 +370,11 @@ function setProfileStatus(text, type = "info") {
   el.dataset.type = type;
 }
 
+/**
+ * @title Fill Profile Form
+ * @description Befüllt das Profil-Formular mit den Daten des übergebenen User-Objekts.
+ * @param {Object} user - User-Objekt mit Profildaten (username, email, displayName, socialLinks, portfolioSettings)
+ */
 function fillProfileForm(user) {
   if (!user) return;
 
@@ -302,6 +392,11 @@ function fillProfileForm(user) {
   $("#p_gap").value = user?.portfolioSettings?.defaultGap ?? 20;
 }
 
+/**
+ * @title Read Profile Form
+ * @description Liest die aktuellen Werte aus dem Profil-Formular und gibt sie als strukturiertes Objekt zurück.
+ * @returns {Object} Profilfelder-Objekt mit displayName, socialLinks und portfolioSettings
+ */
 function readProfileForm() {
   const cols = Number($("#p_cols").value);
   const gap = Number($("#p_gap").value);
@@ -322,6 +417,11 @@ function readProfileForm() {
   };
 }
 
+/**
+ * @title Read Preferences for Preview
+ * @description Liest die aktuellen Theme-, Spalten- und Abstandswerte aus dem Formular für die Live-Vorschau.
+ * @returns {Object} Objekt mit theme (String), cols (Number) und gap (Number)
+ */
 function readPrefsFromFormForPreview() {
   const theme = $("#p_theme")?.value || "light";
   const cols = Number($("#p_cols")?.value);
@@ -329,7 +429,11 @@ function readPrefsFromFormForPreview() {
   return { theme, cols, gap };
 }
 
-/** ========= UI ========= */
+/**
+ * @title Render UI
+ * @description Haupt-Render-Funktion: Baut das komplette UI (Header, Galerie, Upload-Bereich, Login/Profil-Popups) und bindet alle Event-Handler.
+ * @param {Object|null} user - Eingeloggter User oder null für nicht-eingeloggten Zustand
+ */
 function render(user) {
   // Theme/Layout sofort anwenden
   applyUserPrefs(user);
@@ -771,7 +875,10 @@ function render(user) {
   }
 }
 
-/** ========= bootstrap ========= */
+/**
+ * @title Bootstrap
+ * @description Initialisiert die Anwendung: Versucht den Benutzer über vorhandenen Token oder Refresh Token zu authentifizieren und rendert anschließend das UI.
+ */
 async function bootstrap() {
   let user = null;
 

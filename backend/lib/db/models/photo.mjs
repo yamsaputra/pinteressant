@@ -1,3 +1,9 @@
+/**
+ * @title Photo Schema
+ * @description Mongoose schema for photos. Stores image URLs, Cloudinary public IDs, metadata (tags, camera, location), and references to owner and album.
+ * @module db/models/photo
+ */
+
 // Import statements
 import mongoose from "mongoose";
 

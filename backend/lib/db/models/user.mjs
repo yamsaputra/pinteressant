@@ -1,3 +1,9 @@
+/**
+ * @title User Schema
+ * @description Mongoose schema for users. Stores credentials, profile info (displayName, bio, avatar), social links, and portfolio settings.
+ * @module db/models/user
+ */
+
 // Import statements
 import mongoose from "mongoose";
 

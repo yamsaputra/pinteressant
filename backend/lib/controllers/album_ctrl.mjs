@@ -3,7 +3,20 @@ import { Photo, Album } from "../db/models/model_index.mjs";
 import { deleteImage } from "../cloudinary/cloud_utils.mjs";
 
 // CREATE/POST requests
-// Create album
+/**
+ * @title Create Album
+ * @description Creates a new album for the authenticated user with a generated slug from the title.
+ * @route POST /api/albums
+ * @access Private (requires authentication)
+ * @param {String} req.body.title - Title of the album (required)
+ * @param {String} [req.body.description] - Optional description of the album
+ * @param {Number} [req.body.columns] - Optional column count for layout (default: 2)
+ * @param {Number} [req.body.gap] - Optional gap size for layout (default: 20)
+ * @param {Boolean} [req.body.showInNav] - Optional flag to show album in portfolio navigation (default: false)
+ * @param {*} res - status 201 with created album if successful
+ * @throws 500 if error during album creation
+ * @returns 201 with created album data if successful
+ */
 export const createAlbum = async (req, res) => {
   try {
     const { title, description, columns, gap, showInNav } = req.body;
@@ -38,7 +51,15 @@ export const createAlbum = async (req, res) => {
 };
 
 // READ/GET requests
-// Get own album
+/**
+ * @title Get Own Albums
+ * @description Fetches all albums belonging to the authenticated user, including photo count and cover photo.
+ * @route GET /api/albums
+ * @access Private (requires authentication)
+ * @param {*} res - status 200 with array of albums including photoCount
+ * @throws 500 if error during fetch
+ * @returns 200 with albums array (each album includes photoCount and populated coverPhoto)
+ */
 export const getOwnAlbums = async (req, res) => {
   try {
     const userID = req.userId; // Assuming user ID is set in req.userId by auth middleware
@@ -67,7 +88,17 @@ export const getOwnAlbums = async (req, res) => {
 };
 
 // UPDATE/PUT requests
-// Update album
+/**
+ * @title Update Album
+ * @description Updates album metadata (title, description, layout, etc.) if the user is the owner. Auto-generates a new slug if title changes.
+ * @route PUT /api/albums/:id
+ * @access Private (requires authentication)
+ * @param {String} req.params.id - ID of the album to update
+ * @param {JSON} req.body - Fields to update (e.g. { title: "New Title", description: "Updated" })
+ * @param {*} res - status 200 with updated album if successful
+ * @throws 403 if user is not owner of the album, 404 if album not found, 500 if error during update
+ * @returns 200 with updated album data if successful
+ */
 export const updateAlbum = async (req, res) => {
   try {
     const { id } = req.params;
@@ -109,7 +140,17 @@ export const updateAlbum = async (req, res) => {
 };
 
 // DELETE requests
-// Delete album
+/**
+ * @title Delete Album
+ * @description Deletes an album if the user is the owner. Optionally deletes all photos in the album from Cloudinary and MongoDB, or unlinks them.
+ * @route DELETE /api/albums/:id
+ * @access Private (requires authentication)
+ * @param {String} req.params.id - ID of the album to delete
+ * @param {String} [req.query.deletePhotos] - If "true", also deletes all photos in the album; otherwise photos are unlinked
+ * @param {*} res - status 200 with success message if successful
+ * @throws 403 if user is not owner of the album, 404 if album not found, 500 if error during deletion
+ * @returns 200 with deletion confirmation message
+ */
 export const deleteAlbum = async (req, res) => {
   try {
     const { id } = req.params;

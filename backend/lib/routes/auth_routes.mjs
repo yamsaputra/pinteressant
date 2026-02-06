@@ -1,3 +1,9 @@
+/**
+ * @title Auth Routes
+ * @description Defines authentication-related API routes (register, login, logout, refresh, profile).
+ * @module routes/auth_routes
+ */
+
 // Import external libraries
 import express from "express";
 

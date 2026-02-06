@@ -6,11 +6,13 @@ const AUTH_SERVER_URL =
   process.env.AUTH_SERVER_URL || "http://localhost:4000/auth";
 
 /**
- * @description Requests an access token from the auth server.
- * @param {String} userID
- * @param {String} username
- * @param {String} email
- * @returns
+ * @title Request Access Token
+ * @description Requests a new access token from the auth server for a given user.
+ * @param {String} userID - MongoDB user ID
+ * @param {String} username - Username of the user
+ * @param {String} email - Email of the user
+ * @throws Error if the auth server request fails
+ * @returns {Object} Token data object containing the accessToken
  */
 export const requestAccessToken = async (userID, username, email) => {
   try {
@@ -35,9 +37,11 @@ export const requestAccessToken = async (userID, username, email) => {
 };
 
 /**
- * @description Requests a refresh token from the auth server.
- * @param {String} userID
- * @returns
+ * @title Request Refresh Token
+ * @description Requests a new refresh token from the auth server for a given user.
+ * @param {String} userID - MongoDB user ID
+ * @throws Error if the auth server request fails
+ * @returns {Object} Token data object containing the refreshToken
  */
 export const requestRefreshToken = async (userID) => {
   try {
@@ -60,9 +64,11 @@ export const requestRefreshToken = async (userID) => {
 };
 
 /**
- * @description Verifies an access token with the auth server.
- * @param {String} token
- * @returns
+ * @title Verify Access Token
+ * @description Verifies an access token by sending it to the auth server for validation.
+ * @param {String} token - JWT access token to verify
+ * @throws Error if the auth server rejects the token or request fails
+ * @returns {Object} Decoded token data (userID, username, email)
  */
 export const verifyAccessToken = async (token) => {
   try {
@@ -87,11 +93,13 @@ export const verifyAccessToken = async (token) => {
 };
 
 /**
- * @description Refreshes an access token using a refresh token.
- * @param {String} refreshToken
- * @param {String} username
- * @param {String} email
- * @returns
+ * @title Refresh Access Token
+ * @description Refreshes an expired access token using a valid refresh token via the auth server.
+ * @param {String} refreshToken - Valid refresh token
+ * @param {String} username - Username of the user
+ * @param {String} email - Email of the user
+ * @throws Error if the auth server request fails or refresh token is invalid
+ * @returns {Object} Token data object containing the new accessToken
  */
 export const refreshAccessToken = async (refreshToken, username, email) => {
   try {
@@ -114,11 +122,13 @@ export const refreshAccessToken = async (refreshToken, username, email) => {
 };
 
 /**
- * @description Middleware to verify JWT token with auth server.
- * @param {String} req
- * @param {String} res
- * @param {String} next
- * @returns
+ * @title Verify Token Middleware
+ * @description Express middleware that verifies the JWT access token from the Authorization header and attaches user data to the request.
+ * @param {Object} req - Express request object (expects Authorization: Bearer <token> header)
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ * @throws 401 if no token provided or token is invalid/expired
+ * @returns Calls next() with req.userId, req.username, req.email attached
  */
 export const verifyToken = (req, res, next) => {
   try {

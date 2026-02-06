@@ -1,3 +1,9 @@
+/**
+ * @title Cloudinary Configuration
+ * @description Configures the Cloudinary SDK with credentials from environment variables (CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET).
+ * @module cloudinary/cloud_config
+ */
+
 // Import statements
 import { v2 as cloudinary } from "cloudinary";
 import dotenv from "dotenv";

@@ -10,10 +10,17 @@ import {
 } from "../services/fetch_auth.mjs";
 
 /**
- * @description Register a new user.
- * @param {String} req
- * @param {String} res
- * @returns
+ * @title Register User
+ * @description Registers a new user account, hashes the password, requests auth tokens, and sets a refresh token cookie.
+ * @route POST /api/auth/register
+ * @access Public
+ * @param {String} req.body.username - Unique username (required)
+ * @param {String} req.body.email - Unique email address (required)
+ * @param {String} req.body.password - Password to hash and store (required)
+ * @param {String} req.body.displayName - Display name for the user profile (required)
+ * @param {*} res - status 201 with access token and user data if successful
+ * @throws 400 if required fields missing or username/email already in use, 500 if registration fails
+ * @returns 201 with accessToken and user object (id, username, email, displayName)
  */
 export const register = async (req, res) => {
   try {
@@ -111,10 +118,15 @@ export const register = async (req, res) => {
 };
 
 /**
- * @description Login an existing user.
- * @param {Headers} req
- * @param {Headers} res
- * @returns
+ * @title Login User
+ * @description Authenticates a user with email and password, issues access and refresh tokens.
+ * @route POST /api/auth/login
+ * @access Public
+ * @param {String} req.body.email - Email address of the user (required)
+ * @param {String} req.body.password - Password of the user (required)
+ * @param {*} res - status 200 with access token and user data if successful
+ * @throws 400 if email or password missing, 401 if credentials invalid, 500 if login fails
+ * @returns 200 with accessToken and user object (id, username, email, displayName)
  */
 export const login = async (req, res) => {
   try {
@@ -181,9 +193,13 @@ export const login = async (req, res) => {
 };
 
 /**
- * @description Logout user by clearing refresh token cookie.
- * @param {Headers} req verifyToken middleware
- * @param {Headers} res
+ * @title Logout User
+ * @description Logs out the user by clearing the refresh token HTTP-only cookie.
+ * @route POST /api/auth/logout
+ * @access Private (requires authentication via verifyToken middleware)
+ * @param {*} res - status 200 with logout confirmation message
+ * @throws 401 if user is not authenticated, 500 if logout fails
+ * @returns 200 with success message
  */
 export const logout = async (req, res) => {
   try {
@@ -226,10 +242,15 @@ export const logout = async (req, res) => {
 }; */
 
 /**
- * @description Refresh access token using refresh token from cookie.
- * @param {Headers} req
- * @param {Headers} res
- * @returns
+ * @title Refresh Access Token
+ * @description Refreshes the access token using the refresh token stored in an HTTP-only cookie.
+ * @route POST /api/auth/refresh
+ * @access Public (requires valid refresh token cookie)
+ * @param {String} req.cookies.refreshToken - Refresh token from HTTP-only cookie (required)
+ * @param {String} [req.body.userId] - Optional user ID (fallback to req.userId from middleware)
+ * @param {*} res - status 200 with new access token if successful
+ * @throws 401 if no refresh token provided or token is invalid, 404 if user not found
+ * @returns 200 with new accessToken
  */
 export const refresh = async (req, res) => {
   try {
@@ -268,10 +289,13 @@ export const refresh = async (req, res) => {
 };
 
 /**
- * @description Get current user profile.
- * @param {Headers} req
- * @param {Headers} res
- * @returns
+ * @title Get Current User
+ * @description Retrieves the authenticated user's profile data (excluding password).
+ * @route GET /api/auth/me
+ * @access Private (requires authentication via verifyToken middleware)
+ * @param {*} res - status 200 with user profile data
+ * @throws 404 if user not found, 500 if fetch fails
+ * @returns 200 with user object (all fields except password)
  */
 export const getMe = async (req, res) => {
   try {
@@ -290,10 +314,14 @@ export const getMe = async (req, res) => {
 };
 
 /**
- * @description Update current user profile.
- * @param {Headers} req
- * @param {Headers} res
- * @returns
+ * @title Update User Profile
+ * @description Updates the authenticated user's profile. Prevents changes to sensitive fields (password, email, username).
+ * @route PUT /api/auth/profile
+ * @access Private (requires authentication via verifyToken middleware)
+ * @param {JSON} req.body - Fields to update (e.g. { displayName: "New Name", bio: "About me" })
+ * @param {*} res - status 200 with updated user data if successful
+ * @throws 404 if user not found, 500 if update fails
+ * @returns 200 with updated user object (excluding password)
  */
 export const updateProfile = async (req, res) => {
   try {
